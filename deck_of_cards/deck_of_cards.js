@@ -12,31 +12,31 @@ async function shuffleAndDrawCard(){
   // console.log(`${resp.data.cards[0].value} of ${resp.data.cards[0].suit}`);
 }
 
-// shuffleAndDrawCards();
-
-
+let deck = {};
 
 /** Shuffle a new deck and draw cards from it. */
 
-async function shuffleAndDrawFromSameDeck(evt){
-
-  evt.preventDefault();
-
-  const card1 = await shuffleAndDrawCard();
-
-  const deckId = card1.data.deck_id;
-
-  const card2 = await axios(`${BASE_URL}/${deckId}/draw/?count=1`);
-  console.log("clicked");
-
-  // $imgsrc = $('img').attr('src');
-  $cardArea.append(`<img src="${card2.data.cards[0].image}">`);
-
-//  console.log(`${card1.data.cards[0].value} of ${card1.data.cards[0].suit}`);
-//  console.log(`${card2.data.cards[0].value} of ${card2.data.cards[0].suit}`);
+async function shuffleDeck() {
+  const shuffledDeck = await axios(`${BASE_URL}/new/shuffle/?deck_count=1`);
+  deck = shuffledDeck;
 }
 
-// shuffleAndDrawFromSameDeck();
+$("#get-card").on("submit", handleButtonClick);
 
 
-$("#get-card").on("submit", shuffleAndDrawFromSameDeck);
+async function handleButtonClick(evt){
+  evt.preventDefault();
+
+  const card = await axios(`${BASE_URL}/${deck.data.deck_id}/draw/?count=1`);
+  $cardArea.html(`<img src="${card.data.cards[0].image}">`);
+
+  if (card.data['remaining'] === 0) {
+    alert("Deck finished!");
+    $cardArea.empty();
+    shuffleDeck();
+  }
+  console.log(card.data['remaining']);
+}
+
+
+shuffleDeck();
